@@ -255,7 +255,7 @@ export function renderService(response: VercelResponse, view: ServiceView): void
     const lead = redeemLeadTimeMs() / 60_000;
     sendPage(response, `
 <div class="header"><h1>Codex Auto Reset</h1><span class="status"><span class="status-dot"></span>Active</span></div>
-<p class="intro">Automatically redeems resets before they expire.</p>
+<p class="intro">Codex resets</p>
 <section class="metrics" aria-label="Full reset status">
   <div class="metric"><span class="label">Available full resets</span><strong class="value large">${summary.availableCount ?? "—"}</strong></div>
   <div class="metric"><span class="label">Next expiry</span><strong class="value">${timeMarkup(summary.nextExpiry, true)}<span class="hint"></span></strong></div>
