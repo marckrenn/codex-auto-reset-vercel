@@ -187,7 +187,6 @@ function page(content: string): string {
     button.secondary{border-color:#3b3b3b;background:#202020;color:#ddd}
     button.small{min-height:34px;padding:0 11px;font-size:.78rem}
     button.icon{width:28px;min-height:28px;padding:0;border-color:#353535;background:#202020;color:#aaa;font-size:1rem;line-height:1}
-    button.text-danger{min-height:30px;padding:0;border:0;background:transparent;color:#dc7777;font-size:.78rem}
     button.danger-fill{background:#c83b3b;color:white}
     .result{margin:0 0 18px;padding:17px 18px;border:1px solid #2b2b2b;border-radius:14px;background:#141414}
     .result p{font-weight:600;overflow-wrap:anywhere}
@@ -263,7 +262,7 @@ export function renderService(response: VercelResponse, view: ServiceView): void
 </section>
 ${creditListMarkup(summary.availableCredits)}
 ${resultMarkup(summary.lastResult)}
-<section class="settings-panel" aria-label="Settings"><div class="settings-head"><span class="label">Settings</span><details class="settings-help"><summary aria-label="How to change settings">?</summary><div class="settings-tip">Change <code>CHECK_INTERVAL_MINUTES</code> and <code>REDEEM_LEAD_MINUTES</code> under Vercel → Project Settings → Environment Variables, then redeploy.</div></details></div><div class="settings"><span class="chip">Check every ${interval} min</span><span class="chip">Redeem in final ${lead} min</span></div><div class="settings-actions"><button class="text-danger" type="button" data-open-dialog="disconnect-codex-dialog">Disconnect Codex</button></div></section>
+<section class="settings-panel" aria-label="Settings"><div class="settings-head"><span class="label">Settings</span><details class="settings-help"><summary aria-label="How to change settings">?</summary><div class="settings-tip">Change <code>CHECK_INTERVAL_MINUTES</code> and <code>REDEEM_LEAD_MINUTES</code> under Vercel → Project Settings → Environment Variables, then redeploy.</div></details></div><div class="settings"><span class="chip">Check every ${interval} min</span><span class="chip">Redeem in final ${lead} min</span></div><div class="settings-actions"><button class="danger small" type="button" data-open-dialog="disconnect-codex-dialog">Disconnect Codex</button></div></section>
 <dialog id="disconnect-codex-dialog"><div class="dialog-content"><span class="dialog-icon">!</span><h2>Are you sure?</h2><p>Disconnect Codex and remove the stored OAuth credential, schedule, and redemption state? You will need to connect again to resume automatic resets.</p><div class="dialog-actions"><button class="secondary" type="button" data-close-dialog>Cancel</button><form method="post" action="/reset"><input type="hidden" name="confirm" value="reset"><button class="danger-fill" type="submit">Disconnect Codex</button></form></div></div></dialog>`);
     return;
   }
