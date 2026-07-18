@@ -119,7 +119,11 @@ function timeMarkup(value?: string | number, relative = false): string {
 
 function creditListMarkup(credits?: Array<{ expiresAt: string }>): string {
   if (!credits?.length) return "";
-  const rows = credits.map((credit, index) => `<div class="credit-row"><span class="credit-name">Credit ${index + 1}</span><span class="credit-expiry">${timeMarkup(credit.expiresAt, true)}<span class="hint"></span></span></div>`).join("");
+  const rows = credits.map((credit, index) => {
+    const dialogId = `consume-credit-${index}`;
+    const expiresAt = escapeHtml(credit.expiresAt);
+    return `<div class="credit-row"><span class="credit-name">Credit ${index + 1}</span><span class="credit-controls"><span class="credit-expiry">${timeMarkup(credit.expiresAt, true)}<span class="hint"></span></span><button class="secondary small" type="button" data-open-dialog="${dialogId}">Use reset</button></span></div><dialog id="${dialogId}"><div class="dialog-content"><span class="dialog-icon">!</span><h2>Are you sure?</h2><p>Use the reset credit expiring ${timeMarkup(credit.expiresAt)} now? This cannot be undone.</p><div class="dialog-actions"><button class="secondary" type="button" data-close-dialog>Cancel</button><form method="post" action="/consume"><input type="hidden" name="confirm" value="consume"><input type="hidden" name="expiresAt" value="${expiresAt}"><button class="danger-fill" type="submit">Use reset</button></form></div></div></dialog>`;
+  }).join("");
   return `<details class="credit-list"><summary>Show all ${credits.length} credit ${credits.length === 1 ? "expiry" : "expiries"}</summary><div class="credit-rows">${rows}</div></details>`;
 }
 
@@ -153,10 +157,22 @@ function page(content: string): string {
     .credit-list[open] summary{border-bottom:1px solid #292929}
     .credit-rows{padding:0 18px}
     .credit-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 0;border-bottom:1px solid #252525}
-    .credit-row:last-child{border-bottom:0}
+    .credit-row:last-of-type{border-bottom:0}
     .credit-name{color:#929292;font-size:.82rem;font-weight:700}
+    .credit-controls{display:flex;align-items:center;gap:12px}
     .credit-expiry{text-align:right;font-size:.88rem;font-weight:600}
     .credit-expiry .hint{margin-top:2px}
+    dialog{width:min(440px,calc(100% - 32px));padding:0;border:1px solid #3a3a3a;border-radius:18px;background:#151515;color:#f5f5f5;box-shadow:0 28px 90px #000c}
+    dialog::backdrop{background:#000a;backdrop-filter:blur(3px)}
+    .dialog-content{padding:26px}
+    .dialog-icon{display:grid;place-items:center;width:34px;height:34px;margin-bottom:16px;border-radius:50%;background:#3b2020;color:#ff9a9a;font-weight:850}
+    .dialog-content h2{margin:0 0 8px;font-size:1.35rem}
+    .dialog-content p{color:#aaa}
+    .dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+    .dialog-actions form{margin:0}
+    button.secondary{border-color:#3b3b3b;background:#202020;color:#ddd}
+    button.small{min-height:34px;padding:0 11px;font-size:.78rem}
+    button.danger-fill{background:#c83b3b;color:white}
     .result{margin:0 0 18px;padding:17px 18px;border:1px solid #2b2b2b;border-radius:14px;background:#141414}
     .result p{font-weight:600;overflow-wrap:anywhere}
     .settings{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px}
@@ -170,7 +186,7 @@ function page(content: string): string {
     .muted{color:#8d8d8d}
     .setup{display:grid;gap:18px}
     footer{margin-top:22px;color:#666;font-size:.75rem;text-align:center}
-    @media(max-width:640px){body{padding:18px 12px}main{padding:22px;border-radius:16px}.header{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr}.credit-row{align-items:flex-start}.actions{align-items:stretch;flex-direction:column}.actions form,.actions button{width:100%}}
+    @media(max-width:640px){body{padding:18px 12px}main{padding:22px;border-radius:16px}.header{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr}.credit-row{align-items:flex-start;flex-direction:column}.credit-controls{width:100%;justify-content:space-between}.actions{align-items:stretch;flex-direction:column}.actions form,.actions button{width:100%}}
   </style>
 </head>
 <body>
@@ -179,6 +195,9 @@ function page(content: string): string {
     const rtf=new Intl.RelativeTimeFormat(undefined,{numeric:'auto'});
     function relative(date){const seconds=(date-Date.now())/1000;const abs=Math.abs(seconds);if(abs>=86400)return rtf.format(Math.round(seconds/86400),'day');if(abs>=3600)return rtf.format(Math.round(seconds/3600),'hour');if(abs>=60)return rtf.format(Math.round(seconds/60),'minute');return rtf.format(Math.round(seconds),'second')}
     document.querySelectorAll('time[data-local]').forEach((element)=>{const date=new Date(element.dateTime);if(!Number.isFinite(date.getTime()))return;element.title=date.toISOString();element.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(date);if(element.hasAttribute('data-relative')){const hint=element.parentElement?.querySelector('.hint');if(hint)hint.textContent=relative(date)}});
+    document.querySelectorAll('[data-open-dialog]').forEach((button)=>button.addEventListener('click',()=>document.getElementById(button.dataset.openDialog)?.showModal()));
+    document.querySelectorAll('[data-close-dialog]').forEach((button)=>button.addEventListener('click',()=>button.closest('dialog')?.close()));
+    document.querySelectorAll('dialog').forEach((dialog)=>dialog.addEventListener('click',(event)=>{if(event.target===dialog)dialog.close()}));
   </script>
 </body>
 </html>`;

@@ -10,7 +10,7 @@ import {
   type OAuthCredential,
   type OAuthOptions,
 } from "./oauth";
-import { earliestAvailableExpiry, selectDueCredit } from "./schedule";
+import { earliestAvailableExpiry, selectDueCredit, type ResetCredit } from "./schedule";
 import { consumeResetCredit, getResetCredits, type WhamOptions } from "./wham";
 
 const CREDENTIAL_KEY = "credential";
@@ -222,6 +222,104 @@ export async function resetService(store: StateStore): Promise<void> {
   ]);
 }
 
+async function storeInventorySummary(
+  store: StateStore,
+  credits: ResetCredit[],
+  nowMs: number,
+  lastResult: string,
+): Promise<void> {
+  const availableCredits = availableCreditSummary(credits, nowMs);
+  await store.put<SafeSummary>(SUMMARY_KEY, {
+    configured: true,
+    lastCheckAt: iso(nowMs),
+    availableCount: availableCredits.length,
+    availableCredits,
+    nextExpiry: earliestAvailableExpiry(credits, nowMs),
+    lastResult,
+  });
+}
+
+async function consumeAndRefresh(
+  store: StateStore,
+  credential: OAuthCredential,
+  credit: ResetCredit,
+  now: () => number,
+  uuid: () => string,
+  whamOptions: WhamOptions,
+): Promise<{ credits: ResetCredit[]; resultCode?: string }> {
+  const attempts = await store.get<Attempts>(ATTEMPTS_KEY) ?? {};
+  const existing = attempts[credit.id];
+  if (existing?.status === "consumed") throw new Error("Reset credit was already consumed");
+  const attempt: Attempt = existing ?? {
+    redeemRequestId: uuid(),
+    status: "pending",
+    updatedAt: iso(now()),
+  };
+  attempts[credit.id] = attempt;
+  // Persist the idempotency key before the mutating request.
+  await store.put(ATTEMPTS_KEY, attempts);
+
+  const expiresMs = Date.parse(credit.expires_at);
+  if (now() >= expiresMs) throw new Error("Reset credit expired");
+  const result = await consumeResetCredit(
+    credential,
+    credit.id,
+    attempt.redeemRequestId,
+    expiresMs,
+    whamOptions,
+  );
+
+  attempts[credit.id] = { ...attempt, status: "consumed", updatedAt: iso(now()) };
+  await store.put(ATTEMPTS_KEY, attempts);
+  return { credits: await getResetCredits(credential, whamOptions), resultCode: result.code };
+}
+
+export async function consumeCreditByExpiry(
+  store: StateStore,
+  masterKey: string,
+  expiresAt: string,
+  dependencies: Partial<ServiceDependencies> = {},
+): Promise<void> {
+  assertMasterKey(masterKey);
+  if (!Number.isFinite(Date.parse(expiresAt))) throw new Error("Reset credit expiry is invalid");
+
+  const defaults = defaultDependencies();
+  const now = dependencies.now ?? defaults.now;
+  const uuid = dependencies.uuid ?? defaults.uuid;
+  const oauthOptions = { ...defaults.oauth, ...dependencies.oauth, now };
+  const whamOptions = { ...defaults.wham, ...dependencies.wham, now };
+  let credential = await loadCredential(store, masterKey);
+  if (!credential) throw new Error("OAuth is not configured");
+
+  try {
+    if (oauthNeedsRefresh(credential, now())) {
+      credential = await refreshOAuthCredential(credential, oauthOptions);
+      await saveCredential(store, masterKey, credential);
+    }
+
+    const credits = await getResetCredits(credential, whamOptions);
+    const matches = credits.filter((credit) => credit.status === "available" && credit.expires_at === expiresAt);
+    if (matches.length !== 1) throw new Error("Reset credit is no longer uniquely available");
+
+    const consumed = await consumeAndRefresh(store, credential, matches[0]!, now, uuid, whamOptions);
+    await storeInventorySummary(
+      store,
+      consumed.credits,
+      now(),
+      consumed.resultCode ? `Consumed reset credit (${consumed.resultCode})` : "Consumed reset credit",
+    );
+  } catch (error) {
+    const previous = await store.get<SafeSummary>(SUMMARY_KEY);
+    await store.put<SafeSummary>(SUMMARY_KEY, {
+      ...previous,
+      configured: true,
+      lastCheckAt: iso(now()),
+      lastResult: safeOperationalError(error),
+    });
+    throw new Error("Manual reset failed");
+  }
+}
+
 export async function runScheduledReset(
   store: StateStore,
   masterKey: string,
@@ -252,52 +350,17 @@ export async function runScheduledReset(
     const due = selectDueCredit(credits, consumedIds, now());
 
     if (!due) {
-      const summaryNow = now();
-      const availableCredits = availableCreditSummary(credits, summaryNow);
-      await store.put<SafeSummary>(SUMMARY_KEY, {
-        configured: true,
-        lastCheckAt: iso(summaryNow),
-        availableCount: availableCredits.length,
-        availableCredits,
-        nextExpiry: earliestAvailableExpiry(credits, summaryNow),
-        lastResult: "No credit is due",
-      });
+      await storeInventorySummary(store, credits, now(), "No credit is due");
       return;
     }
 
-    const existing = attempts[due.id];
-    const attempt: Attempt = existing ?? {
-      redeemRequestId: uuid(),
-      status: "pending",
-      updatedAt: iso(now()),
-    };
-    attempts[due.id] = attempt;
-    // Persist the idempotency key before the mutating request.
-    await store.put(ATTEMPTS_KEY, attempts);
-
-    const expiresMs = Date.parse(due.expires_at);
-    if (now() >= expiresMs) return;
-    const result = await consumeResetCredit(
-      credential,
-      due.id,
-      attempt.redeemRequestId,
-      expiresMs,
-      whamOptions,
+    const consumed = await consumeAndRefresh(store, credential, due, now, uuid, whamOptions);
+    await storeInventorySummary(
+      store,
+      consumed.credits,
+      now(),
+      consumed.resultCode ? `Consumed reset credit (${consumed.resultCode})` : "Consumed reset credit",
     );
-
-    attempts[due.id] = { ...attempt, status: "consumed", updatedAt: iso(now()) };
-    await store.put(ATTEMPTS_KEY, attempts);
-    credits = await getResetCredits(credential, whamOptions);
-    const summaryNow = now();
-    const availableCredits = availableCreditSummary(credits, summaryNow);
-    await store.put<SafeSummary>(SUMMARY_KEY, {
-      configured: true,
-      lastCheckAt: iso(summaryNow),
-      availableCount: availableCredits.length,
-      availableCredits,
-      nextExpiry: earliestAvailableExpiry(credits, summaryNow),
-      lastResult: result.code ? `Consumed reset credit (${result.code})` : "Consumed reset credit",
-    });
   } catch (error) {
     await store.put<SafeSummary>(SUMMARY_KEY, {
       configured: true,

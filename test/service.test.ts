@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { decryptJson, encryptJson, type EncryptedValue } from "../src/crypto";
 import type { DeviceFlow, OAuthCredential } from "../src/oauth";
-import { advanceSetup, beginSetup, getServiceView, runScheduledReset, type StateStore } from "../src/service";
+import { advanceSetup, beginSetup, consumeCreditByExpiry, getServiceView, runScheduledReset, type StateStore } from "../src/service";
 
 const masterKey = "m".repeat(32);
 const now = Date.parse("2026-07-18T12:00:00Z");
@@ -149,6 +149,41 @@ describe("persistent reset service state", () => {
 
     expect(postedIds).toEqual(["stable-uuid", "stable-uuid"]);
     expect((store.values.get("attempts") as Record<string, { status: string }>)["credit-1"]?.status).toBe("consumed");
+  });
+
+  test("manually consumes only the credit selected by expiry", async () => {
+    const store = new MemoryStore();
+    await seedCredential(store);
+    const selectedExpiry = "2026-07-20T12:00:00Z";
+    let consumed = false;
+    let postedCreditId = "";
+    const fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      if (String(input).endsWith("/consume")) {
+        const body = JSON.parse(String(init?.body));
+        postedCreditId = body.credit_id;
+        expect(body.redeem_request_id).toBe("manual-stable-uuid");
+        consumed = true;
+        return Response.json({ code: "manual-reset" });
+      }
+      return Response.json({ credits: [
+        { id: "credit-1", status: "available", expires_at: "2026-07-19T12:00:00Z" },
+        { id: "credit-2", status: consumed ? "consumed" : "available", expires_at: selectedExpiry },
+      ] });
+    };
+
+    await consumeCreditByExpiry(store, masterKey, selectedExpiry, {
+      now: () => now,
+      uuid: () => "manual-stable-uuid",
+      wham: { fetch },
+    });
+
+    expect(postedCreditId).toBe("credit-2");
+    expect((store.values.get("attempts") as Record<string, { status: string }>)["credit-2"]?.status).toBe("consumed");
+    expect(store.values.get("summary")).toMatchObject({
+      availableCount: 1,
+      availableCredits: [{ expiresAt: "2026-07-19T12:00:00Z" }],
+      lastResult: "Consumed reset credit (manual-reset)",
+    });
   });
 
   test("persists rotated OAuth credentials before fetching inventory", async () => {

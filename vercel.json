@@ -12,6 +12,7 @@
     { "source": "/setup/start", "destination": "/api/setup-start" },
     { "source": "/setup/status", "destination": "/api/setup-status" },
     { "source": "/check", "destination": "/api/check" },
+    { "source": "/consume", "destination": "/api/consume" },
     { "source": "/reset", "destination": "/api/reset" },
     { "source": "/cron", "destination": "/api/cron" }
   ],
