@@ -62,7 +62,7 @@ describe("web security", () => {
     expect(response.body).toContain("Check every 5 min");
     expect(response.body).toContain("REDEEM_LEAD_MINUTES");
     expect(response.body).not.toContain("Encrypted storage");
-    expect(response.body).toContain("Codex resets");
+    expect(response.body).toContain("Automatically redeems Codex resets before they expire.");
     expect(response.body).toContain('aria-label="Check now"');
     expect(response.body).toContain('data-open-dialog="disconnect-codex-dialog"');
     expect(response.body).toContain("You will need to connect again");
