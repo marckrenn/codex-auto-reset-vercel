@@ -81,7 +81,7 @@ function availableCreditSummary(credits: Array<{ status: string; expires_at: str
 
 function safeOperationalError(error: unknown): string {
   if (error instanceof RemoteRequestError) return error.message;
-  if (error instanceof Error && /^(OAuth|Stored OAuth|Unable to decrypt|Reset credit)/.test(error.message)) {
+  if (error instanceof Error && /^(OAuth|Stored OAuth|Unable to decrypt|Reset credit|Full reset)/.test(error.message)) {
     return error.message;
   }
   return "Remote check failed";
@@ -193,7 +193,7 @@ export async function advanceSetup(
         availableCount: availableCredits.length,
         availableCredits,
         nextExpiry: earliestAvailableExpiry(credits, nowMs),
-        lastResult: "OAuth setup completed; credits loaded",
+        lastResult: "OAuth setup completed; full resets loaded",
       });
     } catch (error) {
       // Authentication succeeded even if the optional first inventory read did not.
@@ -249,7 +249,7 @@ async function consumeAndRefresh(
 ): Promise<{ credits: ResetCredit[]; resultCode?: string }> {
   const attempts = await store.get<Attempts>(ATTEMPTS_KEY) ?? {};
   const existing = attempts[credit.id];
-  if (existing?.status === "consumed") throw new Error("Reset credit was already consumed");
+  if (existing?.status === "consumed") throw new Error("Full reset was already used");
   const attempt: Attempt = existing ?? {
     redeemRequestId: uuid(),
     status: "pending",
@@ -281,7 +281,7 @@ export async function consumeCreditByExpiry(
   dependencies: Partial<ServiceDependencies> = {},
 ): Promise<void> {
   assertMasterKey(masterKey);
-  if (!Number.isFinite(Date.parse(expiresAt))) throw new Error("Reset credit expiry is invalid");
+  if (!Number.isFinite(Date.parse(expiresAt))) throw new Error("Full reset expiry is invalid");
 
   const defaults = defaultDependencies();
   const now = dependencies.now ?? defaults.now;
@@ -299,14 +299,14 @@ export async function consumeCreditByExpiry(
 
     const credits = await getResetCredits(credential, whamOptions);
     const matches = credits.filter((credit) => credit.status === "available" && credit.expires_at === expiresAt);
-    if (matches.length !== 1) throw new Error("Reset credit is no longer uniquely available");
+    if (matches.length !== 1) throw new Error("Full reset is no longer uniquely available");
 
     const consumed = await consumeAndRefresh(store, credential, matches[0]!, now, uuid, whamOptions);
     await storeInventorySummary(
       store,
       consumed.credits,
       now(),
-      consumed.resultCode ? `Consumed reset credit (${consumed.resultCode})` : "Consumed reset credit",
+      consumed.resultCode ? `Used full reset (${consumed.resultCode})` : "Used full reset",
     );
   } catch (error) {
     const previous = await store.get<SafeSummary>(SUMMARY_KEY);
@@ -350,7 +350,7 @@ export async function runScheduledReset(
     const due = selectDueCredit(credits, consumedIds, now());
 
     if (!due) {
-      await storeInventorySummary(store, credits, now(), "No credit is due");
+      await storeInventorySummary(store, credits, now(), "No full reset is due");
       return;
     }
 
@@ -359,7 +359,7 @@ export async function runScheduledReset(
       store,
       consumed.credits,
       now(),
-      consumed.resultCode ? `Consumed reset credit (${consumed.resultCode})` : "Consumed reset credit",
+      consumed.resultCode ? `Used full reset (${consumed.resultCode})` : "Used full reset",
     );
   } catch (error) {
     await store.put<SafeSummary>(SUMMARY_KEY, {

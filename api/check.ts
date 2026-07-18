@@ -9,6 +9,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
     await withStore((store) => runScheduledReset(store, key));
     redirect(response);
   } catch {
-    sendPage(response, "<p>Credit check failed. The status page contains safe diagnostic details.</p>", 502);
+    sendPage(response, "<p>Full reset check failed. The status page contains safe diagnostic details.</p>", 502);
   }
 }

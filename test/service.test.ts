@@ -82,7 +82,7 @@ describe("persistent reset service state", () => {
       ],
       nextExpiry: "2026-07-20T12:00:00Z",
       lastCheckAt: "2026-07-18T12:00:00.000Z",
-      lastResult: "OAuth setup completed; credits loaded",
+      lastResult: "OAuth setup completed; full resets loaded",
     });
   });
 
@@ -182,7 +182,7 @@ describe("persistent reset service state", () => {
     expect(store.values.get("summary")).toMatchObject({
       availableCount: 1,
       availableCredits: [{ expiresAt: "2026-07-19T12:00:00Z" }],
-      lastResult: "Consumed reset credit (manual-reset)",
+      lastResult: "Used full reset (manual-reset)",
     });
   });
 

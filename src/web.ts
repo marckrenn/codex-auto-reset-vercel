@@ -122,9 +122,9 @@ function creditListMarkup(credits?: Array<{ expiresAt: string }>): string {
   const rows = credits.map((credit, index) => {
     const dialogId = `consume-credit-${index}`;
     const expiresAt = escapeHtml(credit.expiresAt);
-    return `<div class="credit-row"><span class="credit-name">Credit ${index + 1}</span><span class="credit-controls"><span class="credit-expiry">${timeMarkup(credit.expiresAt, true)}<span class="hint"></span></span><button class="secondary small" type="button" data-open-dialog="${dialogId}">Use reset</button></span></div><dialog id="${dialogId}"><div class="dialog-content"><span class="dialog-icon">!</span><h2>Are you sure?</h2><p>Use the reset credit expiring ${timeMarkup(credit.expiresAt)} now? This cannot be undone.</p><div class="dialog-actions"><button class="secondary" type="button" data-close-dialog>Cancel</button><form method="post" action="/consume"><input type="hidden" name="confirm" value="consume"><input type="hidden" name="expiresAt" value="${expiresAt}"><button class="danger-fill" type="submit">Use reset</button></form></div></div></dialog>`;
+    return `<div class="credit-row"><span class="credit-label"><span class="credit-name">Full reset ${index + 1}</span>${index === 0 ? '<span class="next-badge">Auto-redeems next</span>' : ""}</span><span class="credit-controls"><span class="credit-expiry">${timeMarkup(credit.expiresAt, true)}<span class="hint"></span></span><button class="secondary small" type="button" data-open-dialog="${dialogId}">Use reset</button></span></div><dialog id="${dialogId}"><div class="dialog-content"><span class="dialog-icon">!</span><h2>Are you sure?</h2><p>Use the full reset expiring ${timeMarkup(credit.expiresAt)} now? This cannot be undone.</p><div class="dialog-actions"><button class="secondary" type="button" data-close-dialog>Cancel</button><form method="post" action="/consume"><input type="hidden" name="confirm" value="consume"><input type="hidden" name="expiresAt" value="${expiresAt}"><button class="danger-fill" type="submit">Use reset</button></form></div></div></dialog>`;
   }).join("");
-  return `<details class="credit-list"><summary>Show all ${credits.length} credit ${credits.length === 1 ? "expiry" : "expiries"}</summary><div class="credit-rows">${rows}</div></details>`;
+  return `<details class="credit-list"><summary>Show all ${credits.length} full reset ${credits.length === 1 ? "expiry" : "expiries"}</summary><div class="credit-rows">${rows}</div></details>`;
 }
 
 function page(content: string): string {
@@ -158,7 +158,9 @@ function page(content: string): string {
     .credit-rows{padding:0 18px}
     .credit-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 0;border-bottom:1px solid #252525}
     .credit-row:last-of-type{border-bottom:0}
+    .credit-label{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
     .credit-name{color:#929292;font-size:.82rem;font-weight:700}
+    .next-badge{padding:4px 7px;border:1px solid #285b3c;border-radius:999px;background:#12291b;color:#82e9a6;font-size:.68rem;font-weight:750;white-space:nowrap}
     .credit-controls{display:flex;align-items:center;gap:12px}
     .credit-expiry{text-align:right;font-size:.88rem;font-weight:600}
     .credit-expiry .hint{margin-top:2px}
@@ -229,9 +231,9 @@ export function renderService(response: VercelResponse, view: ServiceView): void
     const lead = redeemLeadTimeMs() / 60_000;
     sendPage(response, `
 <div class="header"><h1>Codex Auto Reset</h1><span class="status"><span class="status-dot"></span>Active</span></div>
-<p class="intro">Reset credits are monitored automatically by QStash.</p>
-<section class="metrics" aria-label="Reset credit status">
-  <div class="metric"><span class="label">Available credits</span><strong class="value large">${summary.availableCount ?? "—"}</strong></div>
+<p class="intro">Full resets are monitored automatically by QStash.</p>
+<section class="metrics" aria-label="Full reset status">
+  <div class="metric"><span class="label">Available full resets</span><strong class="value large">${summary.availableCount ?? "—"}</strong></div>
   <div class="metric"><span class="label">Next expiry</span><strong class="value">${timeMarkup(summary.nextExpiry, true)}<span class="hint"></span></strong></div>
   <div class="metric"><span class="label">Last check</span><strong class="value">${timeMarkup(summary.lastCheckAt, true)}<span class="hint"></span></strong></div>
 </section>

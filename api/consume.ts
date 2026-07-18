@@ -16,6 +16,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
     await withStore((store) => consumeCreditByExpiry(store, key, expiresAt));
     redirect(response);
   } catch {
-    sendPage(response, "<p>Unable to use this reset credit. Return to the dashboard for status details.</p>", 502);
+    sendPage(response, "<p>Unable to use this full reset. Return to the dashboard for status details.</p>", 502);
   }
 }
