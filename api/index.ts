@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { VercelRequest, VercelResponse } from "../src/vercel-types";
 import { ensureSchedule } from "../src/qstash";
 import { getServiceView } from "../src/service";
 import { renderRecovery, renderService, requestOrigin, requirePageAuth, sendPage, withStore } from "../src/web";

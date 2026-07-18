@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { VercelRequest, VercelResponse } from "../src/vercel-types";
 import { beginSetup } from "../src/service";
 import { redirect, requireMutation, sendPage, withStore } from "../src/web";
 

@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { VercelRequest, VercelResponse } from "../src/vercel-types";
 import { ensureSchedule } from "../src/qstash";
 import { advanceSetup, getServiceView } from "../src/service";
 import { requestOrigin, requireMutation, sendJson, withStore } from "../src/web";

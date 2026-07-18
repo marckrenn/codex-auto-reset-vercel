@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { VercelRequest, VercelResponse } from "../src/vercel-types";
 import { deleteSchedule } from "../src/qstash";
 import { resetService } from "../src/service";
 import { readSmallForm, redirect, requireMutation, sendPage, withStore } from "../src/web";

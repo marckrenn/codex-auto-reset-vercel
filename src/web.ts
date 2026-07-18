@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { VercelRequest, VercelResponse } from "./vercel-types";
 import { assertMasterKey, checkIntervalMinutes, redeemLeadTimeMs } from "./config";
 import { constantTimeEqual } from "./crypto";
 import { RedisStateStore, redisClient, withOperationLock } from "./redis-store";
