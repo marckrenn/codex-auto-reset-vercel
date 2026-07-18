@@ -41,7 +41,7 @@ function dueInventory() {
   return { credits: [{ id: "credit-1", status: "available", expires_at: "2026-07-18T12:05:00Z" }] };
 }
 
-describe("Durable Object service state", () => {
+describe("persistent reset service state", () => {
   test("stores completed device login encrypted and removes temporary flow state", async () => {
     const store = new MemoryStore();
     const encode = (value: unknown) => btoa(JSON.stringify(value)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
