@@ -1,6 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "npm install",
+  "git": {
+    "deploymentEnabled": {
+      "*": false,
+      "main": true
+    }
+  },
   "rewrites": [
     { "source": "/", "destination": "/api" },
     { "source": "/setup/start", "destination": "/api/setup-start" },
