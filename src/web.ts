@@ -157,6 +157,9 @@ function page(content: string): string {
     .intro{color:#b6b6b6;margin:-14px 0 24px}
     .metrics{display:grid;grid-template-columns:.7fr 1.3fr 1.3fr;gap:12px;margin:0 0 16px}
     .metric{min-width:0;padding:18px;background:#171717;border:1px solid #2b2b2b;border-radius:14px}
+    .metric-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+    .metric-head form{margin:0}
+    .metric-head .label{margin:0}
     .label{display:block;margin-bottom:9px;color:#969696;font-size:.75rem;font-weight:750;letter-spacing:.07em;text-transform:uppercase}
     .value{display:block;color:#fafafa;font-size:1rem;font-weight:650;overflow-wrap:anywhere}
     .value.large{font-size:2rem;line-height:1}
@@ -183,6 +186,8 @@ function page(content: string): string {
     .dialog-actions form{margin:0}
     button.secondary{border-color:#3b3b3b;background:#202020;color:#ddd}
     button.small{min-height:34px;padding:0 11px;font-size:.78rem}
+    button.icon{width:28px;min-height:28px;padding:0;border-color:#353535;background:#202020;color:#aaa;font-size:1rem;line-height:1}
+    button.text-danger{min-height:30px;padding:0;border:0;background:transparent;color:#dc7777;font-size:.78rem}
     button.danger-fill{background:#c83b3b;color:white}
     .result{margin:0 0 18px;padding:17px 18px;border:1px solid #2b2b2b;border-radius:14px;background:#141414}
     .result p{font-weight:600;overflow-wrap:anywhere}
@@ -190,6 +195,7 @@ function page(content: string): string {
     .settings-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
     .settings-head .label{margin:0}
     .settings{display:flex;flex-wrap:wrap;gap:8px}
+    .settings-actions{display:flex;justify-content:flex-end;margin-top:13px;padding-top:13px;border-top:1px solid #272727}
     .chip{padding:6px 9px;border-radius:7px;background:#1a1a1a;border:1px solid #2c2c2c;color:#a7a7a7;font-size:.78rem}
     .settings-help{position:relative}
     .settings-help summary{display:grid;place-items:center;width:23px;height:23px;border:1px solid #3a3a3a;border-radius:50%;color:#aaa;font-size:.75rem;font-weight:800;cursor:pointer;list-style:none}
@@ -197,8 +203,6 @@ function page(content: string): string {
     .settings-help[open] summary{border-color:#555;color:#eee}
     .settings-tip{position:absolute;z-index:2;right:0;top:31px;width:min(340px,calc(100vw - 70px));padding:12px 13px;border:1px solid #393939;border-radius:10px;background:#202020;color:#bcbcbc;box-shadow:0 12px 34px #0009;font-size:.78rem;line-height:1.5}
     .settings-tip code{padding:1px 4px;border:0;border-radius:4px;background:#2a2a2a;font-size:.72rem;letter-spacing:0}
-    .actions{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:22px;border-top:1px solid #292929}
-    .actions form{margin:0}
     button,a.button{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:42px;border:1px solid transparent;border-radius:9px;padding:0 15px;background:#2780ff;color:white;text-decoration:none;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:filter .15s,border-color .15s,background .15s}
     button:hover,a.button:hover{filter:brightness(1.1)}
     button.danger{border-color:#5f2525;background:transparent;color:#f28c8c}
@@ -208,7 +212,7 @@ function page(content: string): string {
     footer{margin-top:22px;color:#666;font-size:.75rem;text-align:center}
     footer a{color:#888;text-decoration:none}
     footer a:hover{color:#bbb;text-decoration:underline}
-    @media(max-width:640px){body{padding:18px 12px}main{padding:22px;border-radius:16px}.header{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr}.credit-row{align-items:flex-start;flex-direction:column}.credit-controls{width:100%;justify-content:space-between}.actions{align-items:stretch;flex-direction:column}.actions form,.actions button{width:100%}}
+    @media(max-width:640px){body{padding:18px 12px}main{padding:22px;border-radius:16px}.header{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr}.credit-row{align-items:flex-start;flex-direction:column}.credit-controls{width:100%;justify-content:space-between}}
   </style>
 </head>
 <body>
@@ -251,16 +255,16 @@ export function renderService(response: VercelResponse, view: ServiceView): void
     const lead = redeemLeadTimeMs() / 60_000;
     sendPage(response, `
 <div class="header"><h1>Codex Auto Reset</h1><span class="status"><span class="status-dot"></span>Active</span></div>
-<p class="intro">Full resets are monitored automatically by QStash.</p>
+<p class="intro">Automatically redeems resets before they expire.</p>
 <section class="metrics" aria-label="Full reset status">
   <div class="metric"><span class="label">Available full resets</span><strong class="value large">${summary.availableCount ?? "—"}</strong></div>
   <div class="metric"><span class="label">Next expiry</span><strong class="value">${timeMarkup(summary.nextExpiry, true)}<span class="hint"></span></strong></div>
-  <div class="metric"><span class="label">Last check</span><strong class="value">${timeMarkup(summary.lastCheckAt, true)}<span class="hint"></span></strong></div>
+  <div class="metric"><div class="metric-head"><span class="label">Last check</span><form method="post" action="/check"><button class="icon" type="submit" aria-label="Check now" title="Check now">↻</button></form></div><strong class="value">${timeMarkup(summary.lastCheckAt, true)}<span class="hint"></span></strong></div>
 </section>
 ${creditListMarkup(summary.availableCredits)}
 ${resultMarkup(summary.lastResult)}
-<section class="settings-panel" aria-label="Settings"><div class="settings-head"><span class="label">Settings</span><details class="settings-help"><summary aria-label="How to change settings">?</summary><div class="settings-tip">Change <code>CHECK_INTERVAL_MINUTES</code> and <code>REDEEM_LEAD_MINUTES</code> under Vercel → Project Settings → Environment Variables, then redeploy.</div></details></div><div class="settings"><span class="chip">Check every ${interval} min</span><span class="chip">Redeem in final ${lead} min</span></div></section>
-<div class="actions"><form method="post" action="/reset" onsubmit="return confirm('Disconnect Codex and remove the stored OAuth credential, schedule, and redemption state?')"><input type="hidden" name="confirm" value="reset"><button class="danger" type="submit">Disconnect Codex</button></form><form method="post" action="/check"><button type="submit">Check now</button></form></div>`);
+<section class="settings-panel" aria-label="Settings"><div class="settings-head"><span class="label">Settings</span><details class="settings-help"><summary aria-label="How to change settings">?</summary><div class="settings-tip">Change <code>CHECK_INTERVAL_MINUTES</code> and <code>REDEEM_LEAD_MINUTES</code> under Vercel → Project Settings → Environment Variables, then redeploy.</div></details></div><div class="settings"><span class="chip">Check every ${interval} min</span><span class="chip">Redeem in final ${lead} min</span></div><div class="settings-actions"><button class="text-danger" type="button" data-open-dialog="disconnect-codex-dialog">Disconnect Codex</button></div></section>
+<dialog id="disconnect-codex-dialog"><div class="dialog-content"><span class="dialog-icon">!</span><h2>Are you sure?</h2><p>Disconnect Codex and remove the stored OAuth credential, schedule, and redemption state? You will need to connect again to resume automatic resets.</p><div class="dialog-actions"><button class="secondary" type="button" data-close-dialog>Cancel</button><form method="post" action="/reset"><input type="hidden" name="confirm" value="reset"><button class="danger-fill" type="submit">Disconnect Codex</button></form></div></div></dialog>`);
     return;
   }
 

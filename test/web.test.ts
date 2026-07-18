@@ -62,8 +62,10 @@ describe("web security", () => {
     expect(response.body).toContain("Check every 5 min");
     expect(response.body).toContain("REDEEM_LEAD_MINUTES");
     expect(response.body).not.toContain("Encrypted storage");
-    expect(response.body).toContain("Disconnect Codex");
-    expect(response.body.indexOf("Disconnect Codex")).toBeLessThan(response.body.indexOf("Check now"));
+    expect(response.body).toContain("Automatically redeems resets before they expire.");
+    expect(response.body).toContain('aria-label="Check now"');
+    expect(response.body).toContain('data-open-dialog="disconnect-codex-dialog"');
+    expect(response.body).toContain("You will need to connect again");
     expect(response.body).toContain("https://x.com/marc_krenn");
     expect(response.body).toContain("https://github.com/marckrenn/codex-auto-reset-vercel");
     expect(response.body).toContain('datetime="2026-07-26T23:47:11.911Z"');
