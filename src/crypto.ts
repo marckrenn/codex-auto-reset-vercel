@@ -1,6 +1,6 @@
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
-const KEY_CONTEXT = "codex-auto-reset-vercel:probe:v1:";
+const KEY_CONTEXT = "codex-auto-reset-vercel:credential:v1:";
 
 export type EncryptedValue = {
   version: 1;
