@@ -73,7 +73,7 @@ npm run typecheck
 
 ## Expected free-tier usage
 
-A five-minute schedule uses approximately 288 QStash messages per day. State storage is very small. This should fit current Vercel Hobby and Upstash free allowances for personal use, but provider limits and pricing can change.
+A five-minute schedule uses approximately 288 QStash messages per day. State storage is very small. A user's first Redis and QStash resources should fit current Upstash free allowances; additional resources in the same account may require a pay-as-you-go plan and payment method. Provider limits and pricing can change.
 
 Vercel Hobby is intended for personal, non-commercial use.
 
