@@ -213,6 +213,7 @@ function page(content: string): string {
     .device-code-row{display:flex;align-items:center;gap:10px}
     .device-code-row code{min-width:0}
     .device-expiry{color:#8d8d8d;font-size:.9rem}
+    .device-approval{display:block;margin-top:4px}
     footer{margin-top:22px;color:#666;font-size:.75rem;text-align:center}
     footer a{color:#888;text-decoration:none}
     footer a:hover{color:#bbb;text-decoration:underline}
@@ -276,7 +277,7 @@ ${resultMarkup(summary.lastResult)}
   if (view.deviceFlow) {
     const flow = view.deviceFlow;
     const retryMs = Math.max(1_000, flow.nextPollAt - Date.now());
-    sendPage(response, `<div class="header"><h1>Connect Codex</h1></div><div class="setup"><p>Open the official OpenAI page and enter this device code:</p><p><a class="button" href="https://auth.openai.com/codex/device" target="_blank" rel="noopener noreferrer">Open OpenAI device login</a></p><div class="device-code-row"><code id="device-code">${escapeHtml(flow.userCode)}</code><button class="secondary small" type="button" data-copy-target="device-code">Copy</button></div><p class="device-expiry">Expires ${timeMarkup(flow.expiresAt, true)}<span class="hint inline"></span>. Approval is checked automatically.</p><p id="status">Waiting for approval…</p></div><script>const status=document.getElementById('status');async function check(){try{const response=await fetch('/setup/status',{method:'POST',credentials:'same-origin'});const result=await response.json();if(result.status==='configured'){location.reload();return}status.textContent=result.message||'Waiting for approval…';setTimeout(check,Math.max(1000,result.retryAfterMs||${flow.intervalMs}))}catch{status.textContent='Status check failed; retrying…';setTimeout(check,5000)}}setTimeout(check,${retryMs});</script>`);
+    sendPage(response, `<div class="header"><h1>Connect Codex</h1></div><div class="setup"><p>Open the official OpenAI page and enter this device code:</p><p><a class="button" href="https://auth.openai.com/codex/device" target="_blank" rel="noopener noreferrer">Open OpenAI device login</a></p><div class="device-code-row"><code id="device-code">${escapeHtml(flow.userCode)}</code><button class="secondary small" type="button" data-copy-target="device-code">Copy</button></div><p class="device-expiry">Expires ${timeMarkup(flow.expiresAt, true)}<span class="hint inline"></span>.<span class="device-approval">Approval is checked automatically.</span></p><p id="status">Waiting for approval…</p></div><script>const status=document.getElementById('status');async function check(){try{const response=await fetch('/setup/status',{method:'POST',credentials:'same-origin'});const result=await response.json();if(result.status==='configured'){location.reload();return}status.textContent=result.message||'Waiting for approval…';setTimeout(check,Math.max(1000,result.retryAfterMs||${flow.intervalMs}))}catch{status.textContent='Status check failed; retrying…';setTimeout(check,5000)}}setTimeout(check,${retryMs});</script>`);
     return;
   }
 
