@@ -83,3 +83,7 @@ Vercel Hobby is intended for personal, non-commercial use.
 - `POST https://chatgpt.com/backend-api/wham/rate-limit-reset-credits/consume`
 
 This project is not affiliated with or endorsed by OpenAI, Vercel, or Upstash.
+
+## License
+
+[MIT](LICENSE)
