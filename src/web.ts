@@ -68,7 +68,8 @@ export function requirePageAuth(request: VercelRequest, response: VercelResponse
   if (!isAuthenticated(request, key)) {
     setSecurityHeaders(response);
     response.setHeader("WWW-Authenticate", 'Basic realm="Codex Auto Reset", charset="UTF-8"');
-    response.status(401).send("Authentication required");
+    response.setHeader("Content-Type", "text/html; charset=utf-8");
+    response.status(401).send(page(`<div class="header"><h1>Codex Auto Reset</h1><span class="status"><span class="status-dot"></span>Private</span></div><div class="setup"><p><strong>Deployment ready.</strong></p><p class="muted">This dashboard is protected with your MASTER_KEY.</p><p><a class="button" href="/" target="_blank" rel="noopener noreferrer">Open dashboard</a></p></div>`));
     return undefined;
   }
   return key;
