@@ -117,6 +117,12 @@ function timeMarkup(value?: string | number, relative = false): string {
   return `<time datetime="${escapeHtml(iso)}" data-local${relative ? " data-relative" : ""}>${escapeHtml(iso)}</time>`;
 }
 
+function creditListMarkup(credits?: Array<{ expiresAt: string }>): string {
+  if (!credits?.length) return "";
+  const rows = credits.map((credit, index) => `<div class="credit-row"><span class="credit-name">Credit ${index + 1}</span><span class="credit-expiry">${timeMarkup(credit.expiresAt, true)}<span class="hint"></span></span></div>`).join("");
+  return `<details class="credit-list"><summary>Show all ${credits.length} credit ${credits.length === 1 ? "expiry" : "expiries"}</summary><div class="credit-rows">${rows}</div></details>`;
+}
+
 function page(content: string): string {
   return `<!doctype html>
 <html lang="en">
@@ -142,6 +148,15 @@ function page(content: string): string {
     .value{display:block;color:#fafafa;font-size:1rem;font-weight:650;overflow-wrap:anywhere}
     .value.large{font-size:2rem;line-height:1}
     .hint{display:block;margin-top:5px;color:#777;font-size:.78rem}
+    .credit-list{margin:0 0 16px;border:1px solid #2b2b2b;border-radius:14px;background:#141414;overflow:hidden}
+    .credit-list summary{padding:15px 18px;color:#c8c8c8;font-size:.88rem;font-weight:700;cursor:pointer;user-select:none}
+    .credit-list[open] summary{border-bottom:1px solid #292929}
+    .credit-rows{padding:0 18px}
+    .credit-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 0;border-bottom:1px solid #252525}
+    .credit-row:last-child{border-bottom:0}
+    .credit-name{color:#929292;font-size:.82rem;font-weight:700}
+    .credit-expiry{text-align:right;font-size:.88rem;font-weight:600}
+    .credit-expiry .hint{margin-top:2px}
     .result{margin:0 0 18px;padding:17px 18px;border:1px solid #2b2b2b;border-radius:14px;background:#141414}
     .result p{font-weight:600;overflow-wrap:anywhere}
     .settings{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px}
@@ -155,7 +170,7 @@ function page(content: string): string {
     .muted{color:#8d8d8d}
     .setup{display:grid;gap:18px}
     footer{margin-top:22px;color:#666;font-size:.75rem;text-align:center}
-    @media(max-width:640px){body{padding:18px 12px}main{padding:22px;border-radius:16px}.header{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr}.actions{align-items:stretch;flex-direction:column}.actions form,.actions button{width:100%}}
+    @media(max-width:640px){body{padding:18px 12px}main{padding:22px;border-radius:16px}.header{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr}.credit-row{align-items:flex-start}.actions{align-items:stretch;flex-direction:column}.actions form,.actions button{width:100%}}
   </style>
 </head>
 <body>
@@ -201,6 +216,7 @@ export function renderService(response: VercelResponse, view: ServiceView): void
   <div class="metric"><span class="label">Next expiry</span><strong class="value">${timeMarkup(summary.nextExpiry, true)}<span class="hint"></span></strong></div>
   <div class="metric"><span class="label">Last check</span><strong class="value">${timeMarkup(summary.lastCheckAt, true)}<span class="hint"></span></strong></div>
 </section>
+${creditListMarkup(summary.availableCredits)}
 <section class="result"><span class="label">Last result</span><p>${escapeHtml(summary.lastResult ?? "Waiting for the first scheduled check")}</p></section>
 <div class="settings" aria-label="Configuration"><span class="chip">Check every ${interval} min</span><span class="chip">Redeem in final ${lead} min</span><span class="chip">Encrypted storage</span></div>
 <div class="actions"><form method="post" action="/check"><button type="submit">Check now</button></form><form method="post" action="/reset" onsubmit="return confirm('Remove the stored OAuth credential, schedule, and redemption state?')"><input type="hidden" name="confirm" value="reset"><button class="danger" type="submit">Reset OAuth setup</button></form></div>`);

@@ -76,6 +76,10 @@ describe("persistent reset service state", () => {
     const view = await getServiceView(store, masterKey);
     expect(view.summary).toMatchObject({
       availableCount: 2,
+      availableCredits: [
+        { expiresAt: "2026-07-20T12:00:00Z" },
+        { expiresAt: "2026-07-21T12:00:00Z" },
+      ],
       nextExpiry: "2026-07-20T12:00:00Z",
       lastCheckAt: "2026-07-18T12:00:00.000Z",
       lastResult: "OAuth setup completed; credits loaded",

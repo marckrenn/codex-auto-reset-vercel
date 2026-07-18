@@ -47,6 +47,11 @@ describe("web security", () => {
       summary: {
         configured: true,
         availableCount: 3,
+        availableCredits: [
+          { expiresAt: "2026-07-26T23:47:11.911Z" },
+          { expiresAt: "2026-08-02T23:47:11.911Z" },
+          { expiresAt: "2026-08-09T23:47:11.911Z" },
+        ],
         nextExpiry: "2026-07-26T23:47:11.911Z",
         lastCheckAt: "2026-07-18T19:31:35.876Z",
         lastResult: "No credit is due <script>",
@@ -56,6 +61,8 @@ describe("web security", () => {
     expect(response.body).toContain("status-dot");
     expect(response.body).toContain("Check every 5 min");
     expect(response.body).toContain('datetime="2026-07-26T23:47:11.911Z"');
+    expect(response.body).toContain("Show all 3 credit expiries");
+    expect(response.body).toContain('datetime="2026-08-09T23:47:11.911Z"');
     expect(response.body).toContain("No credit is due &lt;script&gt;");
     expect(response.body).not.toContain("No credit is due <script>");
   });

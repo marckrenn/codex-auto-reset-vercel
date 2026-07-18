@@ -30,6 +30,7 @@ export type SafeSummary = {
   configured: boolean;
   lastCheckAt?: string;
   availableCount?: number;
+  availableCredits?: Array<{ expiresAt: string }>;
   nextExpiry?: string;
   lastResult?: string;
 };
@@ -69,6 +70,13 @@ function defaultDependencies(): ServiceDependencies {
 
 function iso(nowMs: number): string {
   return new Date(nowMs).toISOString();
+}
+
+function availableCreditSummary(credits: Array<{ status: string; expires_at: string }>, nowMs: number) {
+  return credits
+    .filter((credit) => credit.status === "available" && Date.parse(credit.expires_at) > nowMs)
+    .sort((left, right) => Date.parse(left.expires_at) - Date.parse(right.expires_at))
+    .map((credit) => ({ expiresAt: credit.expires_at }));
 }
 
 function safeOperationalError(error: unknown): string {
@@ -178,10 +186,12 @@ export async function advanceSetup(
         ...dependencies.wham,
         now: () => nowMs,
       });
+      const availableCredits = availableCreditSummary(credits, nowMs);
       await store.put<SafeSummary>(SUMMARY_KEY, {
         configured: true,
         lastCheckAt: iso(nowMs),
-        availableCount: credits.filter((credit) => credit.status === "available").length,
+        availableCount: availableCredits.length,
+        availableCredits,
         nextExpiry: earliestAvailableExpiry(credits, nowMs),
         lastResult: "OAuth setup completed; credits loaded",
       });
@@ -242,11 +252,14 @@ export async function runScheduledReset(
     const due = selectDueCredit(credits, consumedIds, now());
 
     if (!due) {
+      const summaryNow = now();
+      const availableCredits = availableCreditSummary(credits, summaryNow);
       await store.put<SafeSummary>(SUMMARY_KEY, {
         configured: true,
-        lastCheckAt: iso(now()),
-        availableCount: credits.filter((credit) => credit.status === "available").length,
-        nextExpiry: earliestAvailableExpiry(credits, now()),
+        lastCheckAt: iso(summaryNow),
+        availableCount: availableCredits.length,
+        availableCredits,
+        nextExpiry: earliestAvailableExpiry(credits, summaryNow),
         lastResult: "No credit is due",
       });
       return;
@@ -275,11 +288,14 @@ export async function runScheduledReset(
     attempts[due.id] = { ...attempt, status: "consumed", updatedAt: iso(now()) };
     await store.put(ATTEMPTS_KEY, attempts);
     credits = await getResetCredits(credential, whamOptions);
+    const summaryNow = now();
+    const availableCredits = availableCreditSummary(credits, summaryNow);
     await store.put<SafeSummary>(SUMMARY_KEY, {
       configured: true,
-      lastCheckAt: iso(now()),
-      availableCount: credits.filter((credit) => credit.status === "available").length,
-      nextExpiry: earliestAvailableExpiry(credits, now()),
+      lastCheckAt: iso(summaryNow),
+      availableCount: availableCredits.length,
+      availableCredits,
+      nextExpiry: earliestAvailableExpiry(credits, summaryNow),
       lastResult: result.code ? `Consumed reset credit (${result.code})` : "Consumed reset credit",
     });
   } catch (error) {
