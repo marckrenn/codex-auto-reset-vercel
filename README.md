@@ -1,14 +1,14 @@
 # Codex Auto Reset for Vercel
 
-A private, user-owned Vercel deployment that checks ChatGPT reset credits every five minutes and consumes the earliest available credit during its final ten minutes.
+A user-owned Vercel deployment that checks Codex full resets every five minutes and uses the earliest available reset during its final ten minutes.
 
 > This uses undocumented OpenAI endpoints and an unofficial device-code OAuth flow. OpenAI may change or disable them at any time.
 
 ## Deploy
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmarckrenn%2Fcodex-auto-reset-vercel&project-name=codex-auto-reset&repository-name=codex-auto-reset&demo-title=Codex+Auto+Reset&demo-description=User-owned+Vercel+deployment+for+automatically+redeeming+expiring+Codex+reset+credits.&env=MASTER_KEY&envDescription=Enter+a+random+secret+of+at+least+32+characters.+This+encrypts+OAuth+credentials+and+is+also+the+setup+password.&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22envVarPrefix%22%3A%22KV%22%2C%22protocol%22%3A%22storage%22%2C%22allowConnectExistingProduct%22%3Atrue%7D%2C%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-qstash%22%2C%22envVarPrefix%22%3A%22QSTASH%22%2C%22allowConnectExistingProduct%22%3Atrue%7D%5D)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmarckrenn%2Fcodex-auto-reset-vercel&project-name=codex-auto-reset&repository-name=codex-auto-reset&demo-title=Codex+Auto+Reset&demo-description=User-owned+Vercel+deployment+for+automatically+redeeming+expiring+Codex+full+resets.&env=MASTER_KEY&envDescription=Enter+a+random+secret+of+at+least+32+characters.+This+encrypts+OAuth+credentials+and+is+also+the+setup+password.&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22envVarPrefix%22%3A%22KV%22%2C%22protocol%22%3A%22storage%22%2C%22allowConnectExistingProduct%22%3Atrue%7D%2C%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-qstash%22%2C%22envVarPrefix%22%3A%22QSTASH%22%2C%22allowConnectExistingProduct%22%3Atrue%7D%5D)
 
-The deployment flow provisions the Upstash Redis and QStash products and asks for one user-created `MASTER_KEY`. The source repository must be public before unaffiliated users can deploy it.
+The deployment flow provisions the Upstash Redis and QStash products and asks for one user-created `MASTER_KEY`.
 
 ## Architecture
 
@@ -30,9 +30,9 @@ Each user deploys into their own Vercel and Upstash accounts. No shared credenti
 - Remote responses have timeout and size limits.
 - UI summaries never include tokens or raw remote response bodies.
 
-## Manual private deployment setup
+## Manual deployment
 
-Requirements: Node.js, npm, Vercel CLI access, and a Vercel account.
+Requirements: Node.js 24, npm, Vercel CLI access, and a Vercel account.
 
 ```bash
 npm install
@@ -57,7 +57,7 @@ Set these under **Vercel → Project → Settings → Environment Variables**, t
 | Variable | Default | Allowed | Purpose |
 | --- | ---: | ---: | --- |
 | `CHECK_INTERVAL_MINUTES` | `5` | `1`–`60` | QStash inventory-check interval |
-| `REDEEM_LEAD_MINUTES` | `10` | `1`–`60` | How close to expiry a credit becomes eligible |
+| `REDEEM_LEAD_MINUTES` | `10` | `1`–`60` | How close to expiry a full reset becomes eligible |
 | `STATE_NAMESPACE` | unset | letters, numbers, `_`, `-` | Isolates deployments that deliberately share one Redis database |
 
 Never change `STATE_NAMESPACE` after OAuth setup. Most users should leave it unset.
@@ -68,10 +68,13 @@ The OpenAI device-login polling interval is not configurable because OpenAI supp
 
 ## Development
 
+Development requires [Bun](https://bun.sh/).
+
 ```bash
 npm install
 bun test
 npm run typecheck
+npx vercel dev
 ```
 
 ## Expected free-tier usage

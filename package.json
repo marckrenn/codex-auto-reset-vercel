@@ -1,10 +1,18 @@
 {
   "name": "codex-auto-reset-vercel",
+  "version": "0.1.0",
+  "description": "User-owned Vercel deployment for automatically redeeming expiring Codex full resets.",
   "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marckrenn/codex-auto-reset-vercel.git"
+  },
+  "engines": {
+    "node": "24.x"
+  },
   "packageManager": "npm@11.8.0",
   "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel deploy",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
@@ -14,7 +22,7 @@
   },
   "devDependencies": {
     "@types/bun": "^1.3.14",
-    "@vercel/node": "latest",
+    "@vercel/node": "^5.8.26",
     "typescript": "^5.9.3"
   }
 }
