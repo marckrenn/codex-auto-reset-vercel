@@ -1,4 +1,4 @@
-import { LEAD_TIME_MS } from "./config";
+import { redeemLeadTimeMs } from "./config";
 
 export type ResetCredit = {
   id: string;
@@ -38,7 +38,7 @@ export function selectDueCredit(
       if (credit.status !== "available"
         || consumedIds.has(credit.id)
         || !Number.isFinite(expiresMs)
-        || nowMs < expiresMs - LEAD_TIME_MS
+        || nowMs < expiresMs - redeemLeadTimeMs()
         || nowMs >= expiresMs) {
         return [];
       }

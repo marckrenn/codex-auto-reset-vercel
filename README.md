@@ -44,6 +44,19 @@ Open the production URL and authenticate with:
 
 Complete **Start Codex login**. The application performs an immediate read-only inventory check and creates its QStash schedule automatically.
 
+## Optional settings
+
+Set these under **Vercel → Project → Settings → Environment Variables**, then redeploy:
+
+| Variable | Default | Allowed | Purpose |
+| --- | ---: | ---: | --- |
+| `CHECK_INTERVAL_MINUTES` | `5` | `1`–`60` | QStash inventory-check interval |
+| `REDEEM_LEAD_MINUTES` | `10` | `1`–`60` | How close to expiry a credit becomes eligible |
+
+The app automatically replaces an existing QStash schedule when the interval changes. A one-minute interval exceeds QStash's current free daily message allowance; five minutes is recommended.
+
+The OpenAI device-login polling interval is not configurable because OpenAI supplies it.
+
 ## Development
 
 ```bash

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { assertMasterKey } from "./config";
+import { assertMasterKey, checkIntervalMinutes } from "./config";
 import { constantTimeEqual } from "./crypto";
 import { RedisStateStore, redisClient, withOperationLock } from "./redis-store";
 import type { ServiceView, StateStore } from "./service";
@@ -137,7 +137,8 @@ export function renderRecovery(response: VercelResponse): void {
 export function renderService(response: VercelResponse, view: ServiceView): void {
   if (view.configured) {
     const summary = view.summary;
-    sendPage(response, `<p><strong>Configured and active.</strong> QStash checks reset credits every five minutes.</p><dl><dt>Available credits</dt><dd>${summary.availableCount ?? "—"}</dd><dt>Next expiry</dt><dd>${escapeHtml(formatDate(summary.nextExpiry))}</dd><dt>Last check</dt><dd>${escapeHtml(formatDate(summary.lastCheckAt))}</dd><dt>Last result</dt><dd>${escapeHtml(summary.lastResult ?? "Waiting for the first scheduled check")}</dd></dl><form method="post" action="/check"><button type="submit">Check now</button></form><p></p><form method="post" action="/reset" onsubmit="return confirm('Remove the stored OAuth credential, schedule, and redemption state?')"><input type="hidden" name="confirm" value="reset"><button class="danger" type="submit">Reset OAuth setup</button></form>`);
+    const interval = checkIntervalMinutes();
+    sendPage(response, `<p><strong>Configured and active.</strong> QStash checks reset credits every ${interval} ${interval === 1 ? "minute" : "minutes"}.</p><dl><dt>Available credits</dt><dd>${summary.availableCount ?? "—"}</dd><dt>Next expiry</dt><dd>${escapeHtml(formatDate(summary.nextExpiry))}</dd><dt>Last check</dt><dd>${escapeHtml(formatDate(summary.lastCheckAt))}</dd><dt>Last result</dt><dd>${escapeHtml(summary.lastResult ?? "Waiting for the first scheduled check")}</dd></dl><form method="post" action="/check"><button type="submit">Check now</button></form><p></p><form method="post" action="/reset" onsubmit="return confirm('Remove the stored OAuth credential, schedule, and redemption state?')"><input type="hidden" name="confirm" value="reset"><button class="danger" type="submit">Reset OAuth setup</button></form>`);
     return;
   }
 

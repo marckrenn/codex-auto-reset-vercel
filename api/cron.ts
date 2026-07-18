@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { qstashReceiver } from "../src/qstash";
+import { ensureSchedule, qstashReceiver } from "../src/qstash";
 import { runScheduledReset } from "../src/service";
 import { masterKey, requestOrigin, setSecurityHeaders, withStore } from "../src/web";
 
@@ -37,7 +37,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   try {
-    await withStore((store) => runScheduledReset(store, masterKey()));
+    await withStore(async (store) => {
+      await ensureSchedule(store, requestOrigin(request));
+      await runScheduledReset(store, masterKey());
+    });
     response.status(204).send("");
   } catch {
     response.status(503).send("Scheduled check failed");

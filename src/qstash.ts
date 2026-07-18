@@ -1,4 +1,5 @@
 import { Client, Receiver } from "@upstash/qstash";
+import { checkCronExpression } from "./config";
 import type { StateStore } from "./service";
 
 const SCHEDULE_KEY = "qstash-schedule";
@@ -6,6 +7,7 @@ const SCHEDULE_KEY = "qstash-schedule";
 export type StoredSchedule = {
   scheduleId: string;
   destination: string;
+  cron: string;
 };
 
 function qstashClient(): Client {
@@ -23,10 +25,11 @@ export function qstashReceiver(): Receiver {
 
 export async function ensureSchedule(store: StateStore, origin: string): Promise<StoredSchedule> {
   const destination = new URL("/cron", origin).toString();
+  const cron = checkCronExpression();
   if (!destination.startsWith("https://")) throw new Error("QStash destination must use HTTPS");
 
   const existing = await store.get<StoredSchedule>(SCHEDULE_KEY);
-  if (existing?.scheduleId && existing.destination === destination) return existing;
+  if (existing?.scheduleId && existing.destination === destination && existing.cron === cron) return existing;
 
   const client = qstashClient();
   if (existing?.scheduleId) {
@@ -35,14 +38,14 @@ export async function ensureSchedule(store: StateStore, origin: string): Promise
 
   const created = await client.schedules.create({
     destination,
-    cron: "*/5 * * * *",
+    cron,
     method: "POST",
     body: "{}",
     headers: { "Content-Type": "application/json" },
     retries: 2,
     redact: { body: true, header: true },
   });
-  const schedule = { scheduleId: created.scheduleId, destination };
+  const schedule = { scheduleId: created.scheduleId, destination, cron };
   await store.put(SCHEDULE_KEY, schedule);
   return schedule;
 }
