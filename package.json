@@ -1,7 +1,6 @@
 {
   "name": "codex-auto-reset-vercel",
   "private": true,
-  "type": "module",
   "packageManager": "npm@11.8.0",
   "scripts": {
     "dev": "vercel dev",
