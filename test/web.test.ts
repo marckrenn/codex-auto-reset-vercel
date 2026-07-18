@@ -95,6 +95,8 @@ describe("web security", () => {
     expect(response.body).toContain('id="device-code">ABCD-EFGH');
     expect(response.body).toContain('data-copy-target="device-code"');
     expect(response.body).toContain("Approval is checked automatically.");
+    expect(response.body.indexOf("First, copy this device code")).toBeLessThan(response.body.indexOf('id="device-code"'));
+    expect(response.body.indexOf('id="device-code"')).toBeLessThan(response.body.indexOf("Then, open OpenAI's device login page"));
     expect(response.body).not.toContain("This code expires");
   });
 
