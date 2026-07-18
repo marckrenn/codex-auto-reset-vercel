@@ -117,6 +117,15 @@ function timeMarkup(value?: string | number, relative = false): string {
   return `<time datetime="${escapeHtml(iso)}" data-local${relative ? " data-relative" : ""}>${escapeHtml(iso)}</time>`;
 }
 
+function resultMarkup(lastResult?: string): string {
+  if (!lastResult
+    || lastResult === "No full reset is due"
+    || lastResult === "OAuth setup completed; full resets loaded") {
+    return "";
+  }
+  return `<section class="result"><span class="label">Recent activity</span><p>${escapeHtml(lastResult)}</p></section>`;
+}
+
 function creditListMarkup(credits?: Array<{ expiresAt: string }>): string {
   if (!credits?.length) return "";
   const rows = credits.map((credit, index) => {
@@ -249,7 +258,7 @@ export function renderService(response: VercelResponse, view: ServiceView): void
   <div class="metric"><span class="label">Last check</span><strong class="value">${timeMarkup(summary.lastCheckAt, true)}<span class="hint"></span></strong></div>
 </section>
 ${creditListMarkup(summary.availableCredits)}
-<section class="result"><span class="label">Last result</span><p>${escapeHtml(summary.lastResult ?? "Waiting for the first scheduled check")}</p></section>
+${resultMarkup(summary.lastResult)}
 <section class="settings-panel" aria-label="Settings"><div class="settings-head"><span class="label">Settings</span><details class="settings-help"><summary aria-label="How to change settings">?</summary><div class="settings-tip">Change <code>CHECK_INTERVAL_MINUTES</code> and <code>REDEEM_LEAD_MINUTES</code> under Vercel → Project Settings → Environment Variables, then redeploy.</div></details></div><div class="settings"><span class="chip">Check every ${interval} min</span><span class="chip">Redeem in final ${lead} min</span></div></section>
 <div class="actions"><form method="post" action="/reset" onsubmit="return confirm('Disconnect Codex and remove the stored OAuth credential, schedule, and redemption state?')"><input type="hidden" name="confirm" value="reset"><button class="danger" type="submit">Disconnect Codex</button></form><form method="post" action="/check"><button type="submit">Check now</button></form></div>`);
     return;

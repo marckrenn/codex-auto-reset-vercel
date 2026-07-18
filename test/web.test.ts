@@ -77,4 +77,14 @@ describe("web security", () => {
     expect(response.body).toContain("No full reset is due &lt;script&gt;");
     expect(response.body).not.toContain("No full reset is due <script>");
   });
+
+  test("hides routine check results until noteworthy activity occurs", () => {
+    const response = new ResponseStub();
+    renderService(response as never, {
+      configured: true,
+      summary: { configured: true, availableCount: 3, lastResult: "No full reset is due" },
+    });
+    expect(response.body).not.toContain("Recent activity");
+    expect(response.body).not.toContain("No full reset is due");
+  });
 });
