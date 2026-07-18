@@ -80,6 +80,24 @@ describe("web security", () => {
     expect(response.body).not.toContain("No full reset is due <script>");
   });
 
+  test("renders a copyable device code with a clean expiry line", () => {
+    const response = new ResponseStub();
+    renderService(response as never, {
+      configured: false,
+      deviceFlow: {
+        userCode: "ABCD-EFGH",
+        expiresAt: Date.parse("2026-07-19T00:19:00Z"),
+        nextPollAt: 0,
+        intervalMs: 5_000,
+      },
+      summary: { configured: false },
+    });
+    expect(response.body).toContain('id="device-code">ABCD-EFGH');
+    expect(response.body).toContain('data-copy-target="device-code"');
+    expect(response.body).toContain("Approval is checked automatically.");
+    expect(response.body).not.toContain("This code expires");
+  });
+
   test("hides routine check results until noteworthy activity occurs", () => {
     const response = new ResponseStub();
     renderService(response as never, {

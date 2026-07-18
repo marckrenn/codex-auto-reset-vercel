@@ -165,6 +165,7 @@ function page(content: string): string {
     .value{display:block;color:#fafafa;font-size:1rem;font-weight:650;overflow-wrap:anywhere}
     .value.large{font-size:2rem;line-height:1}
     .hint{display:block;margin-top:5px;color:#777;font-size:.78rem}
+    .hint.inline{display:inline;margin:0 0 0 4px}
     .credit-list{margin:0 0 16px;border:1px solid #2b2b2b;border-radius:14px;background:#141414;overflow:hidden}
     .credit-list summary{padding:15px 18px;color:#c8c8c8;font-size:.88rem;font-weight:700;cursor:pointer;user-select:none}
     .credit-list[open] summary{border-bottom:1px solid #292929}
@@ -209,10 +210,13 @@ function page(content: string): string {
     code{display:inline-block;padding:8px 11px;border:1px solid #343434;border-radius:9px;background:#191919;font-size:1.35rem;letter-spacing:.08em;user-select:all}
     .muted{color:#8d8d8d}
     .setup{display:grid;gap:18px}
+    .device-code-row{display:flex;align-items:center;gap:10px}
+    .device-code-row code{min-width:0}
+    .device-expiry{color:#8d8d8d;font-size:.9rem}
     footer{margin-top:22px;color:#666;font-size:.75rem;text-align:center}
     footer a{color:#888;text-decoration:none}
     footer a:hover{color:#bbb;text-decoration:underline}
-    @media(max-width:640px){body{padding:18px 12px}main{padding:22px;border-radius:16px}.header{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr}.credit-row{align-items:flex-start;flex-direction:column}.credit-controls{width:100%;justify-content:space-between}}
+    @media(max-width:640px){body{padding:18px 12px}main{padding:22px;border-radius:16px}.header{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr}.credit-row{align-items:flex-start;flex-direction:column}.credit-controls{width:100%;justify-content:space-between}.device-code-row{align-items:stretch;flex-direction:column}.device-code-row button{width:100%}}
   </style>
 </head>
 <body>
@@ -220,7 +224,8 @@ function page(content: string): string {
   <script>
     const rtf=new Intl.RelativeTimeFormat(undefined,{numeric:'auto'});
     function relative(date){const seconds=(date-Date.now())/1000;const abs=Math.abs(seconds);if(abs>=86400)return rtf.format(Math.round(seconds/86400),'day');if(abs>=3600)return rtf.format(Math.round(seconds/3600),'hour');if(abs>=60)return rtf.format(Math.round(seconds/60),'minute');return rtf.format(Math.round(seconds),'second')}
-    document.querySelectorAll('time[data-local]').forEach((element)=>{const date=new Date(element.dateTime);if(!Number.isFinite(date.getTime()))return;element.title=date.toISOString();element.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(date);if(element.hasAttribute('data-relative')){const hint=element.parentElement?.querySelector('.hint');if(hint)hint.textContent=relative(date)}});
+    document.querySelectorAll('time[data-local]').forEach((element)=>{const date=new Date(element.dateTime);if(!Number.isFinite(date.getTime()))return;element.title=date.toISOString();element.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(date);if(element.hasAttribute('data-relative')){const hint=element.parentElement?.querySelector('.hint');if(hint)hint.textContent=hint.classList.contains('inline')?'('+relative(date)+')':relative(date)}});
+    document.querySelectorAll('[data-copy-target]').forEach((button)=>button.addEventListener('click',async()=>{const target=document.getElementById(button.dataset.copyTarget);if(!target)return;try{await navigator.clipboard.writeText(target.textContent||'');const previous=button.textContent;button.textContent='Copied';setTimeout(()=>button.textContent=previous,1500)}catch{const selection=getSelection();const range=document.createRange();range.selectNodeContents(target);selection?.removeAllRanges();selection?.addRange(range)}}));
     document.querySelectorAll('[data-open-dialog]').forEach((button)=>button.addEventListener('click',()=>document.getElementById(button.dataset.openDialog)?.showModal()));
     document.querySelectorAll('[data-close-dialog]').forEach((button)=>button.addEventListener('click',()=>button.closest('dialog')?.close()));
     document.querySelectorAll('dialog').forEach((dialog)=>dialog.addEventListener('click',(event)=>{if(event.target===dialog)dialog.close()}));
@@ -271,7 +276,7 @@ ${resultMarkup(summary.lastResult)}
   if (view.deviceFlow) {
     const flow = view.deviceFlow;
     const retryMs = Math.max(1_000, flow.nextPollAt - Date.now());
-    sendPage(response, `<div class="header"><h1>Connect Codex</h1></div><div class="setup"><p>Open the official OpenAI page and enter this device code:</p><p><a class="button" href="https://auth.openai.com/codex/device" target="_blank" rel="noopener noreferrer">Open OpenAI device login</a></p><p><code>${escapeHtml(flow.userCode)}</code></p><p class="muted">This code expires ${timeMarkup(flow.expiresAt, true)}<span class="hint"></span>. This page checks approval automatically.</p><p id="status">Waiting for approval…</p></div><script>const status=document.getElementById('status');async function check(){try{const response=await fetch('/setup/status',{method:'POST',credentials:'same-origin'});const result=await response.json();if(result.status==='configured'){location.reload();return}status.textContent=result.message||'Waiting for approval…';setTimeout(check,Math.max(1000,result.retryAfterMs||${flow.intervalMs}))}catch{status.textContent='Status check failed; retrying…';setTimeout(check,5000)}}setTimeout(check,${retryMs});</script>`);
+    sendPage(response, `<div class="header"><h1>Connect Codex</h1></div><div class="setup"><p>Open the official OpenAI page and enter this device code:</p><p><a class="button" href="https://auth.openai.com/codex/device" target="_blank" rel="noopener noreferrer">Open OpenAI device login</a></p><div class="device-code-row"><code id="device-code">${escapeHtml(flow.userCode)}</code><button class="secondary small" type="button" data-copy-target="device-code">Copy</button></div><p class="device-expiry">Expires ${timeMarkup(flow.expiresAt, true)}<span class="hint inline"></span>. Approval is checked automatically.</p><p id="status">Waiting for approval…</p></div><script>const status=document.getElementById('status');async function check(){try{const response=await fetch('/setup/status',{method:'POST',credentials:'same-origin'});const result=await response.json();if(result.status==='configured'){location.reload();return}status.textContent=result.message||'Waiting for approval…';setTimeout(check,Math.max(1000,result.retryAfterMs||${flow.intervalMs}))}catch{status.textContent='Status check failed; retrying…';setTimeout(check,5000)}}setTimeout(check,${retryMs});</script>`);
     return;
   }
 
