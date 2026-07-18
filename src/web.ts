@@ -177,8 +177,17 @@ function page(content: string): string {
     button.danger-fill{background:#c83b3b;color:white}
     .result{margin:0 0 18px;padding:17px 18px;border:1px solid #2b2b2b;border-radius:14px;background:#141414}
     .result p{font-weight:600;overflow-wrap:anywhere}
-    .settings{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px}
+    .settings-panel{position:relative;margin:0 0 24px;padding:15px 17px;border:1px solid #292929;border-radius:14px;background:#121212}
+    .settings-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .settings-head .label{margin:0}
+    .settings{display:flex;flex-wrap:wrap;gap:8px}
     .chip{padding:6px 9px;border-radius:7px;background:#1a1a1a;border:1px solid #2c2c2c;color:#a7a7a7;font-size:.78rem}
+    .settings-help{position:relative}
+    .settings-help summary{display:grid;place-items:center;width:23px;height:23px;border:1px solid #3a3a3a;border-radius:50%;color:#aaa;font-size:.75rem;font-weight:800;cursor:pointer;list-style:none}
+    .settings-help summary::-webkit-details-marker{display:none}
+    .settings-help[open] summary{border-color:#555;color:#eee}
+    .settings-tip{position:absolute;z-index:2;right:0;top:31px;width:min(340px,calc(100vw - 70px));padding:12px 13px;border:1px solid #393939;border-radius:10px;background:#202020;color:#bcbcbc;box-shadow:0 12px 34px #0009;font-size:.78rem;line-height:1.5}
+    .settings-tip code{padding:1px 4px;border:0;border-radius:4px;background:#2a2a2a;font-size:.72rem;letter-spacing:0}
     .actions{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:22px;border-top:1px solid #292929}
     .actions form{margin:0}
     button,a.button{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:42px;border:1px solid transparent;border-radius:9px;padding:0 15px;background:#2780ff;color:white;text-decoration:none;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:filter .15s,border-color .15s,background .15s}
@@ -188,11 +197,13 @@ function page(content: string): string {
     .muted{color:#8d8d8d}
     .setup{display:grid;gap:18px}
     footer{margin-top:22px;color:#666;font-size:.75rem;text-align:center}
+    footer a{color:#888;text-decoration:none}
+    footer a:hover{color:#bbb;text-decoration:underline}
     @media(max-width:640px){body{padding:18px 12px}main{padding:22px;border-radius:16px}.header{align-items:flex-start;flex-direction:column}.metrics{grid-template-columns:1fr}.credit-row{align-items:flex-start;flex-direction:column}.credit-controls{width:100%;justify-content:space-between}.actions{align-items:stretch;flex-direction:column}.actions form,.actions button{width:100%}}
   </style>
 </head>
 <body>
-  <main>${content}<footer>Unofficial, user-owned deployment</footer></main>
+  <main>${content}<footer>Unofficial, made by <a href="https://x.com/marc_krenn" target="_blank" rel="noopener noreferrer">@marc_krenn</a>. Use at your own risk. <a href="https://github.com/marckrenn/codex-auto-reset-vercel" target="_blank" rel="noopener noreferrer">Source on GitHub</a>.</footer></main>
   <script>
     const rtf=new Intl.RelativeTimeFormat(undefined,{numeric:'auto'});
     function relative(date){const seconds=(date-Date.now())/1000;const abs=Math.abs(seconds);if(abs>=86400)return rtf.format(Math.round(seconds/86400),'day');if(abs>=3600)return rtf.format(Math.round(seconds/3600),'hour');if(abs>=60)return rtf.format(Math.round(seconds/60),'minute');return rtf.format(Math.round(seconds),'second')}
@@ -239,8 +250,8 @@ export function renderService(response: VercelResponse, view: ServiceView): void
 </section>
 ${creditListMarkup(summary.availableCredits)}
 <section class="result"><span class="label">Last result</span><p>${escapeHtml(summary.lastResult ?? "Waiting for the first scheduled check")}</p></section>
-<div class="settings" aria-label="Configuration"><span class="chip">Check every ${interval} min</span><span class="chip">Redeem in final ${lead} min</span><span class="chip">Encrypted storage</span></div>
-<div class="actions"><form method="post" action="/check"><button type="submit">Check now</button></form><form method="post" action="/reset" onsubmit="return confirm('Remove the stored OAuth credential, schedule, and redemption state?')"><input type="hidden" name="confirm" value="reset"><button class="danger" type="submit">Reset OAuth setup</button></form></div>`);
+<section class="settings-panel" aria-label="Settings"><div class="settings-head"><span class="label">Settings</span><details class="settings-help"><summary aria-label="How to change settings">?</summary><div class="settings-tip">Change <code>CHECK_INTERVAL_MINUTES</code> and <code>REDEEM_LEAD_MINUTES</code> under Vercel → Project Settings → Environment Variables, then redeploy.</div></details></div><div class="settings"><span class="chip">Check every ${interval} min</span><span class="chip">Redeem in final ${lead} min</span></div></section>
+<div class="actions"><form method="post" action="/reset" onsubmit="return confirm('Disconnect Codex and remove the stored OAuth credential, schedule, and redemption state?')"><input type="hidden" name="confirm" value="reset"><button class="danger" type="submit">Disconnect Codex</button></form><form method="post" action="/check"><button type="submit">Check now</button></form></div>`);
     return;
   }
 

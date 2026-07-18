@@ -60,6 +60,12 @@ describe("web security", () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).toContain("status-dot");
     expect(response.body).toContain("Check every 5 min");
+    expect(response.body).toContain("REDEEM_LEAD_MINUTES");
+    expect(response.body).not.toContain("Encrypted storage");
+    expect(response.body).toContain("Disconnect Codex");
+    expect(response.body.indexOf("Disconnect Codex")).toBeLessThan(response.body.indexOf("Check now"));
+    expect(response.body).toContain("https://x.com/marc_krenn");
+    expect(response.body).toContain("https://github.com/marckrenn/codex-auto-reset-vercel");
     expect(response.body).toContain('datetime="2026-07-26T23:47:11.911Z"');
     expect(response.body).toContain("Show all 3 full reset expiries");
     expect(response.body).toContain("Auto-redeems next");
