@@ -4,6 +4,12 @@ A private, user-owned Vercel deployment that checks ChatGPT reset credits every 
 
 > This uses undocumented OpenAI endpoints and an unofficial device-code OAuth flow. OpenAI may change or disable them at any time.
 
+## Deploy
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmarckrenn%2Fcodex-auto-reset-vercel&project-name=codex-auto-reset&repository-name=codex-auto-reset&demo-title=Codex+Auto+Reset&demo-description=User-owned+Vercel+deployment+for+automatically+redeeming+expiring+Codex+reset+credits.&env=MASTER_KEY&envDescription=Enter+a+random+secret+of+at+least+32+characters.+This+encrypts+OAuth+credentials+and+is+also+the+setup+password.&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22protocol%22%3A%22storage%22%2C%22allowConnectExistingProduct%22%3Atrue%7D%2C%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-qstash%22%2C%22allowConnectExistingProduct%22%3Atrue%7D%5D)
+
+The deployment flow provisions the Upstash Redis and QStash products and asks for one user-created `MASTER_KEY`. The source repository must be public before unaffiliated users can deploy it.
+
 ## Architecture
 
 - **Vercel Node Functions** — setup UI and reset checks
@@ -24,7 +30,7 @@ Each user deploys into their own Vercel and Upstash accounts. No shared credenti
 - Remote responses have timeout and size limits.
 - UI summaries never include tokens or raw remote response bodies.
 
-## Current private deployment setup
+## Manual private deployment setup
 
 Requirements: Node.js, npm, Vercel CLI access, and a Vercel account.
 
