@@ -195,7 +195,7 @@ function page(content: string): string {
     .settings-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
     .settings-head .label{margin:0}
     .settings{display:flex;flex-wrap:wrap;gap:8px}
-    .settings-actions{display:flex;justify-content:flex-end;margin-top:13px;padding-top:13px;border-top:1px solid #272727}
+    .settings-actions{display:flex;justify-content:flex-start;margin-top:13px;padding-top:13px;border-top:1px solid #272727}
     .chip{padding:6px 9px;border-radius:7px;background:#1a1a1a;border:1px solid #2c2c2c;color:#a7a7a7;font-size:.78rem}
     .settings-help{position:relative}
     .settings-help summary{display:grid;place-items:center;width:23px;height:23px;border:1px solid #3a3a3a;border-radius:50%;color:#aaa;font-size:.75rem;font-weight:800;cursor:pointer;list-style:none}
