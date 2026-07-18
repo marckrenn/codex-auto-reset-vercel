@@ -58,6 +58,9 @@ Set these under **Vercel → Project → Settings → Environment Variables**, t
 | --- | ---: | ---: | --- |
 | `CHECK_INTERVAL_MINUTES` | `5` | `1`–`60` | QStash inventory-check interval |
 | `REDEEM_LEAD_MINUTES` | `10` | `1`–`60` | How close to expiry a credit becomes eligible |
+| `STATE_NAMESPACE` | unset | letters, numbers, `_`, `-` | Isolates deployments that deliberately share one Redis database |
+
+Never change `STATE_NAMESPACE` after OAuth setup. Most users should leave it unset.
 
 The app automatically replaces an existing QStash schedule when the interval changes. A one-minute interval exceeds QStash's current free daily message allowance; five minutes is recommended.
 
