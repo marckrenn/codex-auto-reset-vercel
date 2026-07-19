@@ -4,7 +4,7 @@
 
 Your always-on service automatically redeems eligible Codex full resets before they expire – even while you or your computer sleeps.
 
-[Website](https://codex-auto-reset.marckrenn.dev) · [Docker edition](https://github.com/marckrenn/codex-auto-reset-docker) · [Latest release](https://github.com/marckrenn/codex-auto-reset-vercel/releases/latest)
+**Beta** · [Website](https://codex-auto-reset.marckrenn.dev) · [Docker edition](https://github.com/marckrenn/codex-auto-reset-docker) · [Latest release](https://github.com/marckrenn/codex-auto-reset-vercel/releases/latest)
 
 > [!WARNING]
 > **Codex Auto Reset uses private API.** This independent project uses undocumented OpenAI endpoints and an unofficial device-login flow. OpenAI can change or disable them at any time. Use at your own risk.
@@ -29,15 +29,19 @@ Your always-on service automatically redeems eligible Codex full resets before t
 
 Run only **one active Codex Auto Reset deployment per OpenAI account** to avoid competing redeemers.
 
+> [!IMPORTANT]
+> **Device authorization must be enabled.** Before connecting Codex, open [ChatGPT Security settings](https://chatgpt.com/#settings/Security) and turn on **Enable device code authorization for Codex** near the bottom.
+
 ## Quick start
 
 1. Select **Deploy with Vercel** above.
 2. Let Vercel provision the Upstash Redis and QStash integrations.
 3. Enter a random `MASTER_KEY` with at least 32 characters.
-4. Open the deployed dashboard and authenticate with:
+4. Enable **Enable device code authorization for Codex** in [ChatGPT Security settings](https://chatgpt.com/#settings/Security).
+5. Open the deployed dashboard and authenticate with:
    - username: `admin`
    - password: your `MASTER_KEY`
-5. Select **Start Codex login** and approve the device code on OpenAI's website.
+6. Select **Start Codex login** and approve the device code on OpenAI's website.
 
 Authentication happens directly on OpenAI's website. Codex Auto Reset never receives your OpenAI password.
 

@@ -95,9 +95,23 @@ describe("web security", () => {
     expect(response.body).toContain('id="device-code">ABCD-EFGH');
     expect(response.body).toContain('data-copy-target="device-code"');
     expect(response.body).toContain("Approval is checked automatically.");
+    expect(response.body).toContain("Enable device code authorization for Codex");
+    expect(response.body).toContain("https://chatgpt.com/#settings/Security");
+    expect(response.body).toContain('content:"Beta"');
     expect(response.body.indexOf("First, copy this device code")).toBeLessThan(response.body.indexOf('id="device-code"'));
     expect(response.body.indexOf('id="device-code"')).toBeLessThan(response.body.indexOf("Then, open OpenAI's device login page"));
     expect(response.body).not.toContain("This code expires");
+  });
+
+  test("shows the device authorization prerequisite before starting login", () => {
+    const response = new ResponseStub();
+    renderService(response as never, {
+      configured: false,
+      summary: { configured: false },
+    });
+    expect(response.body).toContain("Enable device code authorization for Codex");
+    expect(response.body).toContain("https://chatgpt.com/#settings/Security");
+    expect(response.body.indexOf("Enable device code authorization for Codex")).toBeLessThan(response.body.indexOf('action="/setup/start"'));
   });
 
   test("hides routine check results until noteworthy activity occurs", () => {

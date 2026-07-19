@@ -153,6 +153,7 @@ function page(content: string): string {
     main::before{position:absolute;inset:0 18% auto;height:1px;content:"";background:linear-gradient(90deg,transparent,#ffffff24,transparent)}
     h1{display:flex;align-items:center;gap:12px;margin:0;font-family:"Space Grotesk","IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;font-size:clamp(1.75rem,5vw,2.25rem);font-weight:650;letter-spacing:-.045em}
     h1::before{width:32px;height:32px;flex:0 0 auto;border-radius:8px;content:"";background:radial-gradient(circle at 36% 45%,#18181b 0 2px,transparent 2.5px),radial-gradient(circle at 64% 45%,#18181b 0 2px,transparent 2.5px),linear-gradient(#18181b,#18181b) 50% 68%/12px 2px no-repeat,#fff;box-shadow:inset 0 0 0 1px #ffffff40}
+    h1::after{align-self:center;padding:3px 6px;border:1px solid #3f3f46;border-radius:5px;content:"Beta";color:#a1a1aa;font-family:"IBM Plex Sans",Inter,ui-sans-serif,system-ui,sans-serif;font-size:.6rem;font-weight:650;letter-spacing:.02em;line-height:1.2}
     p{margin:0}
     .header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:30px}
     .status{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid #166534;border-radius:999px;background:#052e1699;color:#4ade80;font-size:.76rem;font-weight:700;letter-spacing:.03em;white-space:nowrap}
@@ -211,6 +212,10 @@ function page(content: string): string {
     button.danger{border-color:#7f1d2d;background:transparent;color:#fda4af}
     code{display:inline-block;padding:9px 12px;border:1px solid #3f3f46;border-radius:10px;background:#18181b;color:#fafafa;font-size:1.35rem;letter-spacing:.08em;user-select:all}
     .muted{color:#8f8f99}
+    .notice{display:grid;gap:5px;padding:14px 15px;border:1px solid #3f3f46;border-radius:12px;background:#18181b;color:#a1a1aa;font-size:.88rem}
+    .notice strong{color:#f4f4f5}
+    .notice a{color:#f4f4f5;text-underline-offset:3px}
+    .notice a:hover{color:#fff}
     .setup{display:grid;gap:19px}
     .device-code-row{display:flex;align-items:center;gap:10px}
     .device-code-row code{min-width:0}
@@ -219,7 +224,7 @@ function page(content: string): string {
     footer{margin-top:26px;padding-top:19px;border-top:1px solid #29292d;color:#66666f;font-size:.72rem;text-align:center}
     footer a{color:#8f8f99;text-decoration:none}
     footer a:hover{color:#d4d4d8;text-decoration:underline}
-    @media(max-width:640px){body{padding:18px 12px;background-size:auto,48px 48px,48px 48px}main{padding:22px 20px;border-radius:18px}.header{gap:12px}.header h1{font-size:1.4rem}.header h1::before{width:28px;height:28px;border-radius:7px}.status{padding:5px 8px}.metrics{grid-template-columns:1fr}.credit-row{align-items:flex-start;flex-direction:column}.credit-controls{width:100%;justify-content:space-between}.device-code-row{align-items:stretch;flex-direction:column}.device-code-row button{width:100%}}
+    @media(max-width:640px){body{padding:18px 12px;background-size:auto,48px 48px,48px 48px}main{padding:22px 20px;border-radius:18px}.header{flex-wrap:wrap;gap:10px}.header h1{gap:8px;font-size:1.35rem;white-space:nowrap}.header h1::before{width:28px;height:28px;border-radius:7px}.header h1::after{padding:2px 5px;font-size:.56rem}.header .status{margin-left:auto;padding:5px 8px}.metrics{grid-template-columns:1fr}.credit-row{align-items:flex-start;flex-direction:column}.credit-controls{width:100%;justify-content:space-between}.device-code-row{align-items:stretch;flex-direction:column}.device-code-row button{width:100%}}
   </style>
 </head>
 <body>
@@ -279,11 +284,11 @@ ${resultMarkup(summary.lastResult)}
   if (view.deviceFlow) {
     const flow = view.deviceFlow;
     const retryMs = Math.max(1_000, flow.nextPollAt - Date.now());
-    sendPage(response, `<div class="header"><h1>Connect Codex</h1></div><div class="setup"><p>First, copy this device code:</p><div class="device-code-row"><code id="device-code">${escapeHtml(flow.userCode)}</code><button class="secondary small" type="button" data-copy-target="device-code">Copy</button></div><p class="device-expiry">Expires ${timeMarkup(flow.expiresAt, true)}<span class="hint inline"></span>.<span class="device-approval">Approval is checked automatically.</span></p><p>Then, open OpenAI's device login page:</p><p><a class="button" href="https://auth.openai.com/codex/device" target="_blank" rel="noopener noreferrer">Open OpenAI device login</a></p><p id="status">Waiting for approval…</p></div><script>const status=document.getElementById('status');async function check(){try{const response=await fetch('/setup/status',{method:'POST',credentials:'same-origin'});const result=await response.json();if(result.status==='configured'){location.reload();return}status.textContent=result.message||'Waiting for approval…';setTimeout(check,Math.max(1000,result.retryAfterMs||${flow.intervalMs}))}catch{status.textContent='Status check failed; retrying…';setTimeout(check,5000)}}setTimeout(check,${retryMs});</script>`);
+    sendPage(response, `<div class="header"><h1>Connect Codex</h1></div><div class="setup"><p class="notice"><strong>Required ChatGPT setting</strong><span>Open <a href="https://chatgpt.com/#settings/Security" target="_blank" rel="noopener noreferrer">ChatGPT Security settings</a> and enable <strong>Enable device code authorization for Codex</strong> near the bottom.</span></p><p>First, copy this device code:</p><div class="device-code-row"><code id="device-code">${escapeHtml(flow.userCode)}</code><button class="secondary small" type="button" data-copy-target="device-code">Copy</button></div><p class="device-expiry">Expires ${timeMarkup(flow.expiresAt, true)}<span class="hint inline"></span>.<span class="device-approval">Approval is checked automatically.</span></p><p>Then, open OpenAI's device login page:</p><p><a class="button" href="https://auth.openai.com/codex/device" target="_blank" rel="noopener noreferrer">Open OpenAI device login</a></p><p id="status">Waiting for approval…</p></div><script>const status=document.getElementById('status');async function check(){try{const response=await fetch('/setup/status',{method:'POST',credentials:'same-origin'});const result=await response.json();if(result.status==='configured'){location.reload();return}status.textContent=result.message||'Waiting for approval…';setTimeout(check,Math.max(1000,result.retryAfterMs||${flow.intervalMs}))}catch{status.textContent='Status check failed; retrying…';setTimeout(check,5000)}}setTimeout(check,${retryMs});</script>`);
     return;
   }
 
-  sendPage(response, `<div class="header"><h1>Codex Auto Reset</h1></div><div class="setup"><p>No Codex account is connected yet.</p><p class="muted">Authentication happens directly on OpenAI's website. This app never sees your password.</p><form method="post" action="/setup/start"><button type="submit">Start Codex login</button></form></div>`);
+  sendPage(response, `<div class="header"><h1>Codex Auto Reset</h1></div><div class="setup"><p>No Codex account is connected yet.</p><p class="muted">Authentication happens directly on OpenAI's website. This app never sees your password.</p><p class="notice"><strong>Before you start</strong><span>Open <a href="https://chatgpt.com/#settings/Security" target="_blank" rel="noopener noreferrer">ChatGPT Security settings</a> and enable <strong>Enable device code authorization for Codex</strong> near the bottom.</span></p><form method="post" action="/setup/start"><button type="submit">Start Codex login</button></form></div>`);
 }
 
 export async function readSmallForm(request: VercelRequest): Promise<URLSearchParams> {
