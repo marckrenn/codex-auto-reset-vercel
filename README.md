@@ -7,13 +7,13 @@ Your always-on service automatically redeems eligible Codex full resets before t
 **Beta** · [Website](https://codex-auto-reset.marckrenn.dev) · [Docker edition](https://github.com/marckrenn/codex-auto-reset-docker) · [Latest release](https://github.com/marckrenn/codex-auto-reset-vercel/releases/latest)
 
 > [!WARNING]
-> **Codex Auto Reset uses private API.** This independent project uses undocumented OpenAI endpoints and an unofficial device-login flow. OpenAI can change or disable them at any time. Use at your own risk.
+> **Codex Auto Reset uses private APIs.** This independent project uses undocumented OpenAI endpoints and an unofficial device-login flow. OpenAI can change or disable them at any time. Use at your own risk.
 
 ## Why Vercel?
 
 - **Free\*** for typical personal use within current Vercel and Upstash allowances
 - **1-click deploy** with Redis and scheduling included
-- **~2 min setup** before connecting Codex
+- **2 min setup** before connecting Codex
 - User-owned deployment, storage, and encryption key
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmarckrenn%2Fcodex-auto-reset-vercel&project-name=codex-auto-reset&repository-name=codex-auto-reset&demo-title=Codex+Auto+Reset&demo-description=User-owned+Vercel+deployment+for+automatically+redeeming+expiring+Codex+full+resets.&env=MASTER_KEY&envDescription=Enter+a+random+secret+of+at+least+32+characters.+This+encrypts+OAuth+credentials+and+is+also+the+setup+password.&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-kv%22%2C%22envVarPrefix%22%3A%22KV%22%2C%22protocol%22%3A%22storage%22%2C%22allowConnectExistingProduct%22%3Atrue%7D%2C%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22upstash%22%2C%22productSlug%22%3A%22upstash-qstash%22%2C%22envVarPrefix%22%3A%22QSTASH%22%2C%22allowConnectExistingProduct%22%3Atrue%7D%5D)
@@ -24,7 +24,7 @@ Your always-on service automatically redeems eligible Codex full resets before t
 
 | Edition | Best for | Setup |
 | --- | --- | --- |
-| **Vercel** | The quickest path with managed functions, Redis, and scheduling | 1-click deploy, ~2 min setup |
+| **Vercel** | The quickest path with managed functions, Redis, and scheduling | 1-click deploy, 2 min setup |
 | [Docker](https://github.com/marckrenn/codex-auto-reset-docker) | Running everything on your own always-on server | One container, one persistent volume |
 
 Run only **one active Codex Auto Reset deployment per OpenAI account** to avoid competing redeemers.
